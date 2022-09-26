@@ -13,20 +13,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 
-//@Controller
+@Controller
 public class TodoController {
-
-    private final TodoService todoService;
+    private final TodoService service;
 
     @Autowired
-    public TodoController(TodoService todoService) {
-        this.todoService = todoService;
+    public TodoController(TodoService service) {
+        this.service = service;
     }
 
     @RequestMapping("list-todos")
     public String listAllTodos(ModelMap model){
         var username = getUsername(model);
-        var todoList =todoService.findByUsername(username);
+        var todoList = service.findByUsername(username);
         model.addAttribute("todos",todoList);
         return "listTodos";
     }
@@ -38,7 +37,8 @@ public class TodoController {
             return "add-Todo";
         }
         String username = getUsername(modelMap);
-        todoService.addNewTodo(todo);
+        todo.setUsername(username);
+        service.addNewTodo(todo);
         return "redirect:list-todos";
     }
 
@@ -52,24 +52,24 @@ public class TodoController {
 
     @RequestMapping(value = "delete-todo")
     public String deleteTodo(@RequestParam Long id){
-        todoService.deleteTodo(id);
+        service.deleteTodo(id);
         return "redirect:list-todos";
     }
 
     @RequestMapping(value = "update-todo")
     public String gotoUpdateTodo(ModelMap modelMap,@RequestParam Long id){
-        var todo = todoService.findById(id);
+        var todo = service.findById(id);
         modelMap.addAttribute("todo",todo);
         return "add-Todo";
     }
 
     @RequestMapping(value = "update-todo",method = RequestMethod.POST)
-    public String updateTodo(@Valid Todo todo,ModelMap modelMap, BindingResult result){
+    public String updateTodo(@Valid Todo todo, BindingResult result,ModelMap modelMap){
         if(result.hasErrors()){
             return "add-Todo";
         }
-        var username = getUsername(modelMap);
-        todoService.updateTodo(username,todo);
+        String username =  getUsername(modelMap);
+        service.updateTodo(username,todo);
         return "redirect:list-todos";
     }
 
